@@ -45,10 +45,7 @@ import { PermissionGuard } from '../../common/guards/permission.guard';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        secret: configService.get(
-          'JWT_ACCESS_SECRET',
-          'default-secret-key-change-in-production',
-        ),
+        secret: configService.getOrThrow<string>('JWT_ACCESS_SECRET'),
         signOptions: {
           expiresIn: configService.get('JWT_ACCESS_EXPIRES_IN', '15m'),
         },

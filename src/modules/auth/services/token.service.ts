@@ -12,20 +12,14 @@ export class TokenService {
 
   signAccess(payload: Record<string, unknown>): string {
     return this.jwtService.sign(payload, {
-      secret: this.configService.get(
-        'JWT_ACCESS_SECRET',
-        'default-secret-key-change-in-production',
-      ),
+      secret: this.configService.getOrThrow<string>('JWT_ACCESS_SECRET'),
       expiresIn: this.configService.get('JWT_ACCESS_EXPIRES_IN', '15m'),
     });
   }
 
   signRefresh(payload: Record<string, unknown>): string {
     return this.jwtService.sign(payload, {
-      secret: this.configService.get(
-        'JWT_REFRESH_SECRET',
-        'default-refresh-secret-key-change-in-production',
-      ),
+      secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
       expiresIn: this.configService.get('JWT_REFRESH_EXPIRES_IN', '7d'),
     });
   }

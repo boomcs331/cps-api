@@ -3,6 +3,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { appConfig } from './config/app.config';
+import { databaseConfig } from './config/database.config';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { DepartmentsModule } from './modules/departments/departments.module';
@@ -17,21 +19,14 @@ import { AccessControlModule } from './modules/access-control/access-control.mod
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      load: [appConfig, databaseConfig],
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
-        host: configService.get('DB_HOST', 'localhost'),
-        port: configService.get('DB_PORT', 5432),
-        username: configService.get('DB_USERNAME', 'postgres'),
-        password: configService.get('DB_PASSWORD', '9203106'),
-        database: configService.get('DB_DATABASE', 'cps_database'),
-        schema: configService.get('DB_SCHEMA', 'iam'),
+        ...configService.get('database'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        synchronize: false,
-        logging: configService.get('NODE_ENV') === 'development',
       }),
     }),
     AuthModule,

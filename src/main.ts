@@ -4,6 +4,8 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { CustomValidationPipe } from './common/pipes/validation.pipe';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
+import { getAppConfig } from './config/app.config';
+import { getEnv } from './config/env.utils';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -16,7 +18,11 @@ async function bootstrap() {
   app.useGlobalInterceptors(new LoggingInterceptor());
 
   // CORS
-  app.enableCors();
+  const corsOrigin = getEnv('CORS_ORIGIN', '');
+  app.enableCors({
+    origin: corsOrigin ? corsOrigin.split(',') : true,
+    credentials: true,
+  });
 
   // Swagger documentation
   const config = new DocumentBuilder()
@@ -37,7 +43,7 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
 
-  const port = process.env.PORT ?? 3001;
+  const { port } = getAppConfig();
   await app.listen(port);
 
   console.log(`🚀 Application is running on: http://localhost:${port}`);

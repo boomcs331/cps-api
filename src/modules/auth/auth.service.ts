@@ -24,6 +24,7 @@ import {
   UserInactiveException,
   UserLockedException,
 } from '../../common/exceptions/custom-exceptions';
+import { getEnvNumber } from '../../config/env.utils';
 
 @Injectable()
 export class AuthService {
@@ -92,14 +93,11 @@ export class AuthService {
     if (!isPasswordValid) {
       // Increment failed login attempts
       user.failedLoginAttempts += 1;
-      const maxAttempts = this.configService.get(
-        'MAX_FAILED_LOGIN_ATTEMPTS',
-        5,
-      );
+      const maxAttempts = getEnvNumber('MAX_FAILED_LOGIN_ATTEMPTS', 5);
 
       if (user.failedLoginAttempts >= maxAttempts) {
         user.isLocked = true;
-        const lockMinutes = this.configService.get('ACCOUNT_LOCK_MINUTES', 15);
+        const lockMinutes = getEnvNumber('ACCOUNT_LOCK_MINUTES', 15);
         user.lockedUntil = new Date(Date.now() + lockMinutes * 60 * 1000);
       }
 
@@ -181,9 +179,8 @@ export class AuthService {
     const departmentSelectionToken = this.jwtService.sign(
       { sub: user.id },
       {
-        secret: this.configService.get(
+        secret: this.configService.getOrThrow<string>(
           'JWT_DEPARTMENT_SELECTION_SECRET',
-          'default-department-selection-secret-change-in-production',
         ),
         expiresIn: this.configService.get(
           'JWT_DEPARTMENT_SELECTION_EXPIRES_IN',
@@ -235,10 +232,7 @@ export class AuthService {
   async refreshToken(refreshToken: string) {
     // Verify refresh token and load session
     const payload = this.jwtService.verify(refreshToken, {
-      secret: this.configService.get(
-        'JWT_REFRESH_SECRET',
-        'default-refresh-secret-key-change-in-production',
-      ),
+      secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
     });
 
     const session = await this.authSessionRepository
@@ -335,18 +329,12 @@ export class AuthService {
 
     // Generate tokens
     const accessToken = this.jwtService.sign(payload, {
-      secret: this.configService.get(
-        'JWT_ACCESS_SECRET',
-        'default-secret-key-change-in-production',
-      ),
+      secret: this.configService.getOrThrow<string>('JWT_ACCESS_SECRET'),
       expiresIn: this.configService.get('JWT_ACCESS_EXPIRES_IN', '15m'),
     });
 
     const refreshToken = this.jwtService.sign(payload, {
-      secret: this.configService.get(
-        'JWT_REFRESH_SECRET',
-        'default-refresh-secret-key-change-in-production',
-      ),
+      secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
       expiresIn: this.configService.get('JWT_REFRESH_EXPIRES_IN', '7d'),
     });
 

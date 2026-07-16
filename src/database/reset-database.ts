@@ -1,19 +1,18 @@
 import 'reflect-metadata';
 import { DataSource } from 'typeorm';
-import { ConfigService } from '@nestjs/config';
-
-const configService = new ConfigService();
+import { getDatabaseConfig } from '../config/database.config';
+import { getAppConfig } from '../config/app.config';
 
 async function resetDatabase() {
+  const { nodeEnv } = getAppConfig();
+  if (nodeEnv === 'production') {
+    console.error('Database reset is not allowed in production');
+    process.exit(1);
+  }
+
+  const config = getDatabaseConfig();
   const dataSource = new DataSource({
-    type: 'postgres',
-    host: configService.get('DB_HOST', 'localhost'),
-    port: configService.get('DB_PORT', 5432),
-    username: configService.get('DB_USERNAME', 'postgres'),
-    password: configService.get('DB_PASSWORD', '9203106'),
-    database: configService.get('DB_DATABASE', 'cps_database'),
-    schema: configService.get('DB_SCHEMA', 'iam'),
-    synchronize: false,
+    ...config,
     logging: true,
   });
 
@@ -24,16 +23,12 @@ async function resetDatabase() {
     const queryRunner = dataSource.createQueryRunner();
 
     // Drop schema
-    console.log(`Dropping schema: ${configService.get('DB_SCHEMA', 'iam')}`);
-    await queryRunner.query(
-      `DROP SCHEMA IF EXISTS ${configService.get('DB_SCHEMA', 'iam')} CASCADE`,
-    );
+    console.log(`Dropping schema: ${config.schema}`);
+    await queryRunner.query(`DROP SCHEMA IF EXISTS ${config.schema} CASCADE`);
 
     // Recreate schema
-    console.log(`Creating schema: ${configService.get('DB_SCHEMA', 'iam')}`);
-    await queryRunner.query(
-      `CREATE SCHEMA ${configService.get('DB_SCHEMA', 'iam')}`,
-    );
+    console.log(`Creating schema: ${config.schema}`);
+    await queryRunner.query(`CREATE SCHEMA ${config.schema}`);
 
     await queryRunner.release();
     console.log('Database reset completed successfully');
