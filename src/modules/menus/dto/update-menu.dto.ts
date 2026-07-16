@@ -1,4 +1,10 @@
-import { IsString, IsEnum, IsOptional, IsNumber } from 'class-validator';
+import {
+  IsString,
+  IsEnum,
+  IsOptional,
+  IsNumber,
+  IsBoolean,
+} from 'class-validator';
 import { MenuType } from '../../../common/enums/menu-type.enum';
 
 export class UpdateMenuDto {
@@ -29,4 +35,12 @@ export class UpdateMenuDto {
   @IsNumber()
   @IsOptional()
   sortOrder?: number;
+
+  @IsBoolean()
+  @IsOptional()
+  isVisible?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  isActive?: boolean;
 }

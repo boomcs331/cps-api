@@ -111,7 +111,20 @@ export class MenusService {
     if (!menu) {
       throw new NotFoundException('Menu not found');
     }
-    return menu;
+
+    const [children, permissions] = await Promise.all([
+      this.menuRepository.find({
+        where: { parentId: id },
+        order: { sortOrder: 'ASC', createdAt: 'ASC' },
+      }),
+      this.permissionRepository.find({
+        where: { menuId: id },
+        relations: ['action'],
+        order: { createdAt: 'ASC' },
+      }),
+    ]);
+
+    return { ...menu, children, permissions };
   }
 
   async create(createMenuDto: CreateMenuDto) {
@@ -232,6 +245,22 @@ export class MenusService {
 
   async update(id: string, updateMenuDto: UpdateMenuDto) {
     const menu = await this.findOne(id);
+
+    if (updateMenuDto.parentId !== undefined) {
+      if (updateMenuDto.parentId === id) {
+        throw new BadRequestException('Menu cannot be its own parent');
+      }
+
+      if (updateMenuDto.parentId !== menu.parentId) {
+        const parent = await this.menuRepository.findOne({
+          where: { id: updateMenuDto.parentId },
+        });
+        if (!parent) {
+          throw new NotFoundException('Parent menu not found');
+        }
+      }
+    }
+
     Object.assign(menu, updateMenuDto);
     return this.menuRepository.save(menu);
   }
@@ -245,7 +274,7 @@ export class MenusService {
     });
 
     if (childCount > 0) {
-      throw new Error('Cannot delete menu with child menus');
+      throw new BadRequestException('Cannot delete menu with child menus');
     }
 
     await this.menuRepository.remove(menu);

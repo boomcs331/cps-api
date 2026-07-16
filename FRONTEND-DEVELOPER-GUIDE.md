@@ -460,6 +460,8 @@ interface UpdateMenuPayload {
   path?: string;
   icon?: string;
   sortOrder?: number;
+  isVisible?: boolean;
+  isActive?: boolean;
 }
 ```
 
