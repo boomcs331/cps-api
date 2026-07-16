@@ -1,32 +1,68 @@
+import { Type } from 'class-transformer';
 import {
   IsString,
   IsNotEmpty,
-  IsEnum,
   IsOptional,
   IsNumber,
+  IsIn,
+  IsArray,
+  ValidateNested,
 } from 'class-validator';
-import { MenuType } from '../../../common/enums/menu-type.enum';
+
+export class CreateMenuPermissionDto {
+  @IsString()
+  @IsNotEmpty()
+  permissionCode: string;
+
+  @IsString()
+  @IsNotEmpty()
+  permissionName: string;
+
+  @IsString()
+  @IsNotEmpty()
+  resource: string;
+
+  @IsString()
+  @IsNotEmpty()
+  action: string;
+}
+
+export class CreateSubMenuDto {
+  @IsString()
+  @IsNotEmpty()
+  menuCode: string;
+
+  @IsString()
+  @IsNotEmpty()
+  menuName: string;
+
+  @IsIn(['SUB_MENU'])
+  @IsOptional()
+  menuType?: string;
+
+  @IsString()
+  @IsOptional()
+  path?: string;
+
+  @IsArray()
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => CreateMenuPermissionDto)
+  permissions?: CreateMenuPermissionDto[];
+}
 
 export class CreateMenuDto {
   @IsString()
+  @IsNotEmpty()
+  menuCode: string;
+
+  @IsString()
+  @IsNotEmpty()
+  menuName: string;
+
+  @IsIn(['MAIN_MENU', 'SUB_MENU'])
   @IsOptional()
-  parentId?: string;
-
-  @IsString()
-  @IsNotEmpty()
-  code: string;
-
-  @IsString()
-  @IsNotEmpty()
-  nameTh: string;
-
-  @IsString()
-  @IsNotEmpty()
-  nameEn: string;
-
-  @IsEnum(MenuType)
-  @IsOptional()
-  menuType?: MenuType;
+  menuType?: string;
 
   @IsString()
   @IsOptional()
@@ -39,4 +75,16 @@ export class CreateMenuDto {
   @IsNumber()
   @IsOptional()
   sortOrder?: number;
+
+  @IsArray()
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => CreateMenuPermissionDto)
+  permissions?: CreateMenuPermissionDto[];
+
+  @IsArray()
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => CreateSubMenuDto)
+  submenus?: CreateSubMenuDto[];
 }
