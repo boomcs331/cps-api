@@ -8,89 +8,95 @@
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
 | POST | `/auth/login` | Public | เข้าสู่ระบบด้วย username/password |
-| POST | `/auth/select-department` | Public | เลือก department เมื่อ login ได้หลาย department |
-| POST | `/auth/switch-department` | Required | เปลี่ยน department ระหว่างใช้งาน |
-| POST | `/auth/refresh-token` | Public | refresh access token |
-| POST | `/auth/logout` | Required | ออกจากระบบ |
-| GET | `/auth/me` | Required | ดึงข้อมูลผู้ใช้ปัจจุบันพร้อม departments, roles, menus และ flat permissions |
-| GET | `/auth/me/menus` | Required | ดึงเมนูของผู้ใช้ (TODO) |
-| GET | `/auth/me/permissions` | Required | ดึงสิทธิ์ของผู้ใช้ (TODO) |
+| POST | `/auth/select-department` | Public (ต้องใช้ `departmentSelectionToken` จาก `/auth/login`) | เลือก department เมื่อ login ได้หลาย department |
+| POST | `/auth/switch-department` | Bearer | เปลี่ยน department ระหว่างใช้งาน |
+| POST | `/auth/refresh` หรือ `/auth/refresh-token` | Public | refresh access token (ทั้งสอง path เป็น alias กัน) |
+| POST | `/auth/logout` | Bearer | ออกจากระบบ |
+| GET | `/auth/me` | Bearer | ดึงข้อมูลผู้ใช้ปัจจุบันพร้อม departments, roles, menus และ flat permissions |
+| GET | `/auth/me/menus` | Bearer | ดึงเมนูของผู้ใช้ปัจจุบัน |
+| GET | `/auth/me/permissions` | Bearer | ดึงสิทธิ์ของผู้ใช้ปัจจุบัน |
 
 ## Users (ต้องเป็น SUPER_ADMIN)
 
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
-| GET | `/users` | Required | รายการผู้ใช้ (รองรับ `page`, `limit`) |
-| GET | `/users/:id` | Required | ข้อมูลผู้ใช้ตาม id |
-| POST | `/users` | Required | สร้างผู้ใช้ใหม่ |
-| PATCH | `/users/:id` | Required | แก้ไขข้อมูลผู้ใช้ |
-| PATCH | `/users/:id/status` | Required | อัปเดตสถานะผู้ใช้ (active/locked) |
-| POST | `/users/:id/reset-password` | Required | รีเซ็ตรหัสผ่าน |
-| GET | `/users/:id/assignments` | Required | ดึง assignments ของผู้ใช้ |
-| POST | `/users/:id/assignments` | Required | สร้าง assignment ใหม่ |
+| GET | `/users` | Bearer + SUPER_ADMIN | รายการผู้ใช้ (รองรับ `page`, `limit`, `search`) |
+| GET | `/users/:id` | Bearer + SUPER_ADMIN | ข้อมูลผู้ใช้ตาม id |
+| POST | `/users` | Bearer + SUPER_ADMIN | สร้างผู้ใช้ใหม่ |
+| PATCH | `/users/:id` | Bearer + SUPER_ADMIN | แก้ไขข้อมูลผู้ใช้ |
+| PATCH | `/users/:id/status` | Bearer + SUPER_ADMIN | อัปเดตสถานะผู้ใช้ (active/locked) |
+| POST | `/users/:id/reset-password` | Bearer + SUPER_ADMIN | รีเซ็ตรหัสผ่าน |
+| GET | `/users/:id/assignments` | Bearer + SUPER_ADMIN | ดึง assignments ของผู้ใช้ |
+| POST | `/users/:id/assignments` | Bearer + SUPER_ADMIN | สร้าง assignment ใหม่ |
 
 ## Departments (ต้องเป็น SUPER_ADMIN)
 
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
-| GET | `/departments` | Required | รายการแผนก |
-| GET | `/departments/:id` | Required | ข้อมูลแผนก |
-| POST | `/departments` | Required | สร้างแผนก |
-| PATCH | `/departments/:id` | Required | แก้ไขแผนก |
-| DELETE | `/departments/:id` | Required | ลบแผนก |
+| GET | `/departments` | Bearer + SUPER_ADMIN | รายการแผนก (รองรับ `page`, `limit`, `search`) |
+| GET | `/departments/:id` | Bearer + SUPER_ADMIN | ข้อมูลแผนก |
+| POST | `/departments` | Bearer + SUPER_ADMIN | สร้างแผนก |
+| PATCH | `/departments/:id` | Bearer + SUPER_ADMIN | แก้ไขแผนก |
+| DELETE | `/departments/:id` | Bearer + SUPER_ADMIN | ลบแผนก |
 
 ## Roles (ต้องเป็น SUPER_ADMIN)
 
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
-| GET | `/roles` | Required | รายการบทบาท |
-| GET | `/roles/:id` | Required | ข้อมูลบทบาท |
-| POST | `/roles` | Required | สร้างบทบาท |
-| PATCH | `/roles/:id` | Required | แก้ไขบทบาท |
-| DELETE | `/roles/:id` | Required | ลบบทบาท |
+| GET | `/roles` | Bearer + SUPER_ADMIN | รายการบทบาท (รองรับ `page`, `limit`, `search`) |
+| GET | `/roles/:id` | Bearer + SUPER_ADMIN | ข้อมูลบทบาท |
+| POST | `/roles` | Bearer + SUPER_ADMIN | สร้างบทบาท |
+| PATCH | `/roles/:id` | Bearer + SUPER_ADMIN | แก้ไขบทบาท |
+| DELETE | `/roles/:id` | Bearer + SUPER_ADMIN | ลบบทบาท |
 
 ## Menus (ต้องเป็น SUPER_ADMIN)
 
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
-| GET | `/menus` | Required | รายการเมนู |
-| GET | `/menus/tree` | Required | โครงสร้างเมนูแบบ tree |
-| GET | `/menus/:id` | Required | ข้อมูลเมนู |
-| POST | `/menus` | Required | สร้างเมนู |
-| PATCH | `/menus/:id` | Required | แก้ไขเมนู |
-| DELETE | `/menus/:id` | Required | ลบเมนู |
+| GET | `/menus` | Bearer + SUPER_ADMIN | รายการเมนู (รองรับ `page`, `limit`, `search`) |
+| GET | `/menus/tree` | Bearer + SUPER_ADMIN | โครงสร้างเมนูแบบ tree |
+| GET | `/menus/:id` | Bearer + SUPER_ADMIN | ข้อมูลเมนู |
+| POST | `/menus` | Bearer + SUPER_ADMIN | สร้างเมนู |
+| PATCH | `/menus/:id` | Bearer + SUPER_ADMIN | แก้ไขเมนู |
+| DELETE | `/menus/:id` | Bearer + SUPER_ADMIN | ลบเมนู |
 
 ## Permissions (ต้องเป็น SUPER_ADMIN)
 
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
-| GET | `/permissions` | Required | รายการ permission |
-| GET | `/permissions/:id` | Required | ข้อมูล permission |
+| GET | `/permissions` | Bearer + SUPER_ADMIN | รายการ permission (รองรับ `page`, `limit`, `search`) |
+| GET | `/permissions/:id` | Bearer + SUPER_ADMIN | ข้อมูล permission |
 
 ## Sessions (ต้องเป็น SUPER_ADMIN)
 
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
-| GET | `/sessions` | Required | รายการเซสชัน |
-| GET | `/sessions/:id` | Required | ข้อมูลเซสชัน |
-| PATCH | `/sessions/:id/revoke` | Required | revoke เซสชัน |
-| POST | `/sessions/revoke-all/:userId` | Required | revoke ทุกเซสชันของ user |
+| GET | `/sessions` | Bearer + SUPER_ADMIN | รายการเซสชัน (รองรับ `page`, `limit`, `userId`) |
+| GET | `/sessions/:id` | Bearer + SUPER_ADMIN | ข้อมูลเซสชัน |
+| PATCH | `/sessions/:id/revoke` | Bearer + SUPER_ADMIN | revoke เซสชัน |
+| POST | `/sessions/revoke-all/:userId` | Bearer + SUPER_ADMIN | revoke ทุกเซสชันของ user |
 
 ## Audit Logs (ต้องเป็น SUPER_ADMIN)
 
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
-| GET | `/audit-logs` | Required | รายการ audit logs |
-| GET | `/audit-logs/:id` | Required | ข้อมูล audit log |
+| GET | `/audit-logs` | Bearer + SUPER_ADMIN | รายการ audit logs (รองรับ `page`, `limit`, `userId`, `action`) |
+| GET | `/audit-logs/:id` | Bearer + SUPER_ADMIN | ข้อมูล audit log |
+
+## Root
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| GET | `/` | Public | Hello message จาก `AppController` (default NestJS) |
 
 ## คำอธิบาย Auth
 
 - **Public** — ไม่ต้องส่ง token
-- **Required** — ต้องส่ง `Authorization: Bearer <accessToken>`
-- **SUPER_ADMIN** — endpoint ที่ระบุต้องมี role `SUPER_ADMIN` เท่านั้น
+- **Bearer** — ต้องส่ง `Authorization: Bearer <accessToken>`
+- **Bearer + SUPER_ADMIN** — ต้องส่ง token และผู้ใช้ต้องมี role `SUPER_ADMIN`
 
 ## Query Parameters ทั่วไป
 
 สำหรับ endpoints รายการที่รองรับ pagination:
 - `page` — หน้าที่ต้องการ (default: 1)
-- `limit` — จำนวนต่อหน้า (default: 10)
+- `limit` — จำนวนต่อหน้า (default: 20)

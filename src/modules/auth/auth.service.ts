@@ -330,7 +330,7 @@ export class AuthService {
     // Generate tokens
     const accessToken = this.jwtService.sign(payload, {
       secret: this.configService.getOrThrow<string>('JWT_ACCESS_SECRET'),
-      expiresIn: this.configService.get('JWT_ACCESS_EXPIRES_IN', '15m'),
+      expiresIn: this.configService.get('JWT_ACCESS_EXPIRES_IN', '8h'),
     });
 
     const refreshToken = this.jwtService.sign(payload, {
@@ -394,7 +394,7 @@ export class AuthService {
           accessToken,
           refreshToken,
           tokenType: 'Bearer',
-          expiresIn: this.configService.get('JWT_ACCESS_EXPIRES_IN', '15m'),
+          expiresIn: this.configService.get('JWT_ACCESS_EXPIRES_IN', '8h'),
         },
         user: {
           id: user.id,

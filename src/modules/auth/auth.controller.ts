@@ -54,9 +54,8 @@ export class AuthController {
     let payload: { sub: string };
     try {
       payload = this.jwtService.verify(token, {
-        secret: this.configService.get(
+        secret: this.configService.getOrThrow<string>(
           'JWT_DEPARTMENT_SELECTION_SECRET',
-          'default-department-selection-secret-change-in-production',
         ),
       });
     } catch {
