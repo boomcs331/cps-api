@@ -9,6 +9,8 @@ import {
   ValidateNested,
 } from 'class-validator';
 
+const MENU_TYPES = ['MAIN', 'MENU', 'BUTTON'] as const;
+
 export class CreateMenuPermissionDto {
   @IsString()
   @IsNotEmpty()
@@ -30,37 +32,17 @@ export class CreateMenuPermissionDto {
 export class CreateSubMenuDto {
   @IsString()
   @IsNotEmpty()
-  menuCode: string;
+  code: string;
 
   @IsString()
   @IsNotEmpty()
-  menuName: string;
-
-  @IsIn(['SUB_MENU'])
-  @IsOptional()
-  menuType?: string;
-
-  @IsString()
-  @IsOptional()
-  path?: string;
-
-  @IsArray()
-  @IsOptional()
-  @ValidateNested({ each: true })
-  @Type(() => CreateMenuPermissionDto)
-  permissions?: CreateMenuPermissionDto[];
-}
-
-export class CreateMenuDto {
-  @IsString()
-  @IsNotEmpty()
-  menuCode: string;
+  nameTh: string;
 
   @IsString()
   @IsNotEmpty()
-  menuName: string;
+  nameEn: string;
 
-  @IsIn(['MAIN_MENU', 'SUB_MENU'])
+  @IsIn(MENU_TYPES)
   @IsOptional()
   menuType?: string;
 
@@ -75,6 +57,46 @@ export class CreateMenuDto {
   @IsNumber()
   @IsOptional()
   sortOrder?: number;
+
+  @IsArray()
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => CreateMenuPermissionDto)
+  permissions?: CreateMenuPermissionDto[];
+}
+
+export class CreateMenuDto {
+  @IsString()
+  @IsNotEmpty()
+  code: string;
+
+  @IsString()
+  @IsNotEmpty()
+  nameTh: string;
+
+  @IsString()
+  @IsNotEmpty()
+  nameEn: string;
+
+  @IsIn(MENU_TYPES)
+  @IsOptional()
+  menuType?: string;
+
+  @IsString()
+  @IsOptional()
+  path?: string;
+
+  @IsString()
+  @IsOptional()
+  icon?: string;
+
+  @IsNumber()
+  @IsOptional()
+  sortOrder?: number;
+
+  @IsString()
+  @IsOptional()
+  parentId?: string;
 
   @IsArray()
   @IsOptional()

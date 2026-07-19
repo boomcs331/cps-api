@@ -1,13 +1,18 @@
 import {
   IsString,
-  IsEnum,
+  IsIn,
   IsOptional,
   IsNumber,
   IsBoolean,
 } from 'class-validator';
-import { MenuType } from '../../../common/enums/menu-type.enum';
+
+const MENU_TYPES = ['MAIN', 'MENU', 'BUTTON'] as const;
 
 export class UpdateMenuDto {
+  @IsString()
+  @IsOptional()
+  code?: string;
+
   @IsString()
   @IsOptional()
   parentId?: string;
@@ -20,9 +25,9 @@ export class UpdateMenuDto {
   @IsOptional()
   nameEn?: string;
 
-  @IsEnum(MenuType)
+  @IsIn(MENU_TYPES)
   @IsOptional()
-  menuType?: MenuType;
+  menuType?: string;
 
   @IsString()
   @IsOptional()

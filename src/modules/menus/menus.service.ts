@@ -149,17 +149,29 @@ export class MenusService {
         }
       }
 
-      const existingMain = await queryRunner.manager.findOne(Menu, {
-        where: { code: createMenuDto.menuCode },
-      });
+      if (createMenuDto.parentId) {
+        const parent = await queryRunner.manager.findOne(Menu, {
+          where: { id: createMenuDto.parentId },
+        });
+        if (!parent) {
+          throw new NotFoundException('Parent menu not found');
+        }
+      }
 
-      const submenuCodes = (createMenuDto.submenus ?? []).map(
-        (sub) => sub.menuCode,
+      const existingByCode = await queryRunner.manager.findOne(Menu, {
+        where: { code: createMenuDto.code },
+      });
+      if (existingByCode) {
+        throw new DuplicateResourceException('Menu code');
+      }
+
+      const subcodes = (createMenuDto.submenus ?? []).map(
+        (sub) => sub.code,
       );
-      if (new Set(submenuCodes).size !== submenuCodes.length) {
+      if (new Set(subcodes).size !== subcodes.length) {
         throw new BadRequestException('Duplicate submenu code in request');
       }
-      for (const code of submenuCodes) {
+      for (const code of subcodes) {
         const existing = await queryRunner.manager.findOne(Menu, {
           where: { code },
         });
@@ -168,19 +180,10 @@ export class MenusService {
         }
       }
 
-      let savedMain: Menu;
-      if (existingMain) {
-        const hasChildrenToAdd =
-          submenuCodes.length > 0 ||
-          (createMenuDto.permissions ?? []).length > 0;
-        if (!hasChildrenToAdd) {
-          throw new DuplicateResourceException('Menu code');
-        }
-        savedMain = existingMain;
-      } else {
-        const mainMenu = this.buildMenuEntity(createMenuDto);
-        savedMain = await queryRunner.manager.save(Menu, mainMenu);
-      }
+      const savedMain = await queryRunner.manager.save(
+        Menu,
+        this.buildMenuEntity(createMenuDto, createMenuDto.parentId),
+      );
 
       const savedSubmenus: Menu[] = [];
       for (const subDto of createMenuDto.submenus ?? []) {
@@ -246,7 +249,7 @@ export class MenusService {
   async update(id: string, updateMenuDto: UpdateMenuDto) {
     const menu = await this.findOne(id);
 
-    if (updateMenuDto.parentId !== undefined) {
+    if (updateMenuDto.parentId) {
       if (updateMenuDto.parentId === id) {
         throw new BadRequestException('Menu cannot be its own parent');
       }
@@ -261,7 +264,22 @@ export class MenusService {
       }
     }
 
-    Object.assign(menu, updateMenuDto);
+    if (updateMenuDto.code !== undefined) menu.code = updateMenuDto.code;
+    if (updateMenuDto.nameTh !== undefined) menu.nameTh = updateMenuDto.nameTh;
+    if (updateMenuDto.nameEn !== undefined) menu.nameEn = updateMenuDto.nameEn;
+    if (updateMenuDto.path !== undefined) menu.path = updateMenuDto.path;
+    if (updateMenuDto.icon !== undefined) menu.icon = updateMenuDto.icon;
+    if (updateMenuDto.sortOrder !== undefined) menu.sortOrder = updateMenuDto.sortOrder;
+    if (updateMenuDto.isVisible !== undefined) menu.isVisible = updateMenuDto.isVisible;
+    if (updateMenuDto.isActive !== undefined) menu.isActive = updateMenuDto.isActive;
+
+    if (updateMenuDto.parentId !== undefined) {
+      menu.parentId = (updateMenuDto.parentId || null) as string;
+      menu.menuType = updateMenuDto.parentId ? 'SUB' : (updateMenuDto.menuType !== undefined ? this.mapMenuType(updateMenuDto.menuType) : 'MAIN');
+    } else if (updateMenuDto.menuType !== undefined) {
+      menu.menuType = this.mapMenuType(updateMenuDto.menuType);
+    }
+
     return this.menuRepository.save(menu);
   }
 
@@ -282,7 +300,7 @@ export class MenusService {
   }
 
   private mapMenuType(menuType?: string): 'MAIN' | 'SUB' {
-    return menuType === 'SUB_MENU' ? 'SUB' : 'MAIN';
+    return menuType === 'MAIN' ? 'MAIN' : 'SUB';
   }
 
   private buildMenuEntity(
@@ -290,23 +308,15 @@ export class MenusService {
     parentId?: string,
   ): Partial<Menu> {
     const menu: Partial<Menu> = {
-      code: dto.menuCode,
-      nameTh: dto.menuName,
-      nameEn: dto.menuName,
+      code: dto.code,
+      nameTh: dto.nameTh,
+      nameEn: dto.nameEn,
       menuType: parentId ? 'SUB' : this.mapMenuType(dto.menuType),
       path: dto.path,
-      sortOrder: 0,
+      sortOrder: dto.sortOrder ?? 0,
+      icon: 'icon' in dto ? dto.icon : undefined,
+      parentId: parentId || undefined,
     };
-
-    if ('icon' in dto) {
-      menu.icon = dto.icon;
-    }
-    if ('sortOrder' in dto && dto.sortOrder !== undefined) {
-      menu.sortOrder = dto.sortOrder;
-    }
-    if (parentId) {
-      menu.parentId = parentId;
-    }
 
     return menu;
   }
