@@ -7,12 +7,12 @@
 
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
-| POST | `/auth/login` | Public | เข้าสู่ระบบด้วย username/password |
-| POST | `/auth/select-department` | Public (ต้องใช้ `departmentSelectionToken` จาก `/auth/login`) | เลือก department เมื่อ login ได้หลาย department |
-| POST | `/auth/switch-department` | Bearer | เปลี่ยน department ระหว่างใช้งาน |
-| POST | `/auth/refresh` หรือ `/auth/refresh-token` | Public | refresh access token (ทั้งสอง path เป็น alias กัน) |
-| POST | `/auth/logout` | Bearer | ออกจากระบบ |
-| GET | `/auth/me` | Bearer | ดึงข้อมูลผู้ใช้ปัจจุบันพร้อม departments, roles, menus และ flat permissions |
+| POST | `/auth/login` | Public | เข้าสู่ระบบ (`username`, `password`) |
+| POST | `/auth/select-department` | Public (ต้องใช้ `departmentSelectionToken` จาก `/auth/login` + `userDepartmentRoleId`) | เลือก department/role หลัง login |
+| POST | `/auth/switch-department` | Bearer | เปลี่ยน department/role ระหว่างใช้งาน (`userDepartmentRoleId`) |
+| POST | `/auth/refresh` หรือ `/auth/refresh-token` | Public | refresh access token ด้วย `refreshToken` (ทั้งสอง path เป็น alias) |
+| POST | `/auth/logout` | Bearer | ออกจากระบบ (revoke session ปัจจุบัน) |
+| GET | `/auth/me` | Bearer | ข้อมูลผู้ใช้ปัจจุบัน รวม departments, roles และ `accessControl: { menus, permissions }` |
 | GET | `/auth/me/menus` | Bearer | ดึงเมนูของผู้ใช้ปัจจุบัน |
 | GET | `/auth/me/permissions` | Bearer | ดึงสิทธิ์ของผู้ใช้ปัจจุบัน |
 
